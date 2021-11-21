@@ -1,53 +1,44 @@
 package com.example.myview;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FlowLayout extends ViewGroup {
+public class MyFrameLayout extends FrameLayout {
 
-    //TODO 查一下各个构造函数
-    //TODO 看一下各个布局的源码
+    private static final String TAG = "MyFrameLayout";
 
-    private static final String TAG = "FlowLayout";
+    private String id = "";
 
-    // new
-    public FlowLayout(Context context) {
+    public MyFrameLayout(@NonNull Context context) {
         super(context);
-        Log.d(TAG, "FlowLayout: context ");
     }
 
-    // 布局文件  inflate解析布局文件 反射
-    public FlowLayout(Context context, AttributeSet attrs) {
+    public MyFrameLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        Log.d(TAG, "FlowLayout: Context context, AttributeSet attrs = " + attrs
-                + "attrs.getAttributeCount();" + attrs.getAttributeCount()
-        );
-
-        for (int i = 0; i < attrs.getAttributeCount(); i++) {
-            String value = attrs.getAttributeValue(i);
-            String name = attrs.getAttributeName(i);
-            Log.d(TAG, "FlowLayout: value = " + value + "name = " + name);
-        }
-
+        id = attrs.getAttributeValue("http://schemas.android.com/apk/res/android", "id");
     }
 
-    // 主题style 自定义style
-    public FlowLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+    public MyFrameLayout(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        Log.d(TAG, "FlowLayout: Context context, AttributeSet attrs, int defStyleAttr");
     }
 
-    // ImageView四个参数  自定义属性  TODO 去瞅瞅ImageView
-    public FlowLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public MyFrameLayout(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        Log.d(TAG, "FlowLayout: Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes");
     }
+    private final ArrayList<View> mMatchParentChildren = new ArrayList<>(1);
+
+    boolean mMeasureAllChildren = false;
 
     int mHorizontalSpacing = 5;
     int mVerticalSpacing = 2;
@@ -61,17 +52,10 @@ public class FlowLayout extends ViewGroup {
         lineHeights.clear();
     }
 
-    // 度量
-    /*
-    先计算孩子 再计算自己
-    TODO 做根布局 参考值是多少  做子布局 参考值是多少
-    做根布局，按父布局为固定屏幕大小计算
-    子布局，根据父布局数值给出参考值
-     */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        Log.d(TAG, "onMeasure: ");
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
         init();
         //先度量孩子
         int childCount = getChildCount();
@@ -83,6 +67,7 @@ public class FlowLayout extends ViewGroup {
         // 解析父View给的参考值
         int selfWidth = MeasureSpec.getSize(widthMeasureSpec);
         int selfHeight = MeasureSpec.getSize(heightMeasureSpec);
+        int selfMode = MeasureSpec.getMode(widthMeasureSpec);
 
         int parentNeedHeight = 0;
         int parentNeedWidth = 0;
@@ -105,9 +90,29 @@ public class FlowLayout extends ViewGroup {
             //      a.父为确定大小 则自己为不确定但有最大值
             //      b.父为不确定但有最大追 则自己为不确定但有最大值
             //      c.父为不确定 则自己为不确定
-            int childWidthMeasureSpec = getChildMeasureSpec(widthMeasureSpec, paddingR + paddingL, childView.getWidth());
-            int childHeightMeasureSpec = getChildMeasureSpec(heightMeasureSpec, paddingT + paddingB, childView.getHeight());
+            ViewGroup.LayoutParams aa = childView.getLayoutParams();
+            int childWidthMeasureSpec = getChildMeasureSpec_1(widthMeasureSpec, paddingR + paddingL, aa.width);
+            int childHeightMeasureSpec = getChildMeasureSpec_1(heightMeasureSpec, paddingT + paddingB, aa.height);
             childView.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+
+            int mode = MeasureSpec.getMode(childWidthMeasureSpec);
+            int value = MeasureSpec.getSize(childWidthMeasureSpec);
+
+//            String aaaa = "";
+//            switch (mode) {
+//                case MeasureSpec.AT_MOST:
+//                    aaaa = "AT_MOST";
+//                    break;
+//                case MeasureSpec.EXACTLY:
+//                    aaaa = "EXACTLY";
+//                    break;
+//                case MeasureSpec.UNSPECIFIED:
+//                    aaaa = "UNSPECIFIED";
+//                    break;
+//            }
+
+            Log.d(TAG, "onMeasure: childWidthMeasureSpec id = " + id  + " childMode = " + get(mode) + " childValue = " + value
+                    + " selfWidth = " + selfWidth + " selfMode = " + get(selfMode) + " childView.getWidth() = " +  aa.width + " childView = " + childView);
 
             int measuredWidth = childView.getMeasuredWidth();
             int measuredHeight =childView.getMeasuredHeight();
@@ -139,45 +144,30 @@ public class FlowLayout extends ViewGroup {
         int realWidth = (widthMode == MeasureSpec.EXACTLY) ? selfWidth : parentNeedWidth;
         int realHeight = (heightMode == MeasureSpec.EXACTLY) ? selfHeight : parentNeedHeight;
 
-        // 度量自己 保存自己数据
-        setMeasuredDimension(realWidth, realHeight);
 
     }
 
-    //布局
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        int curl = getPaddingLeft();
-        int curt = getPaddingTop();
-        int lineCount = allLines.size();
-        for (int i = 0; i < lineCount; i++) {
-            List<View> lineViews = allLines.get(i);
-            for (int j = 0; j < lineViews.size(); j++) {
-                View view = lineViews.get(i);
-                int left = curl;
-                int top = curt;
-                // measure 之后有值
-                // getWidth 和 getHeight 在 layout之后有值
-                int right = left + view.getMeasuredWidth();
-                int bottom = top + view.getMeasuredHeight();
-                view.layout(left, top, right, bottom);
-                curl = right + mHorizontalSpacing;
-            }
-            curt = curt + lineHeights.get(i) + mVerticalSpacing;
-            curl = getPaddingLeft();
+
+    public String get(int mode) {
+        String aaaa = "";
+        switch (mode) {
+            case MeasureSpec.AT_MOST:
+                aaaa = "AT_MOST";
+                break;
+            case MeasureSpec.EXACTLY:
+                aaaa = "EXACTLY";
+                break;
+            case MeasureSpec.UNSPECIFIED:
+                aaaa = "UNSPECIFIED";
+                break;
         }
+        return aaaa;
     }
 
-
-    // 传入自己的spec和padding和孩子的数值  获取孩子的spec
-    public static int getChildMeasureSpec(int spec, int padding, int childDimension) {
-
-        //自己的mode
+    public static int getChildMeasureSpec_1(int spec, int padding, int childDimension) {
         int specMode = MeasureSpec.getMode(spec);
-        //自己的spec
         int specSize = MeasureSpec.getSize(spec);
 
-        //孩子的最大可用size
         int size = Math.max(0, specSize - padding);
 
         int resultSize = 0;
@@ -185,20 +175,15 @@ public class FlowLayout extends ViewGroup {
 
         switch (specMode) {
             // Parent has imposed an exact size on us
-            //自己确定为100dp （自己为确认大小）
             case MeasureSpec.EXACTLY:
                 if (childDimension >= 0) {
-                    // 孩子确定为50dp 则孩子为确定大小 result为50
                     resultSize = childDimension;
                     resultMode = MeasureSpec.EXACTLY;
-                } else if (childDimension == LayoutParams.MATCH_PARENT) {
-                    // 孩子确定为填满  则孩子为确定大小 result为100dp
+                } else if (childDimension == ViewGroup.LayoutParams.MATCH_PARENT) {
                     // Child wants to be our size. So be it.
                     resultSize = size;
                     resultMode = MeasureSpec.EXACTLY;
-                } else if (childDimension == LayoutParams.WRAP_CONTENT) {
-                    //孩子需要根据自己的孩子确定大小 则孩子为有最大值待确认 则暂时给他一个最大值100dp 等他确定自己的值
-                    // TODO 如果孙子view加起来大于100呢
+                } else if (childDimension == ViewGroup.LayoutParams.WRAP_CONTENT) {
                     // Child wants to determine its own size. It can't be
                     // bigger than us.
                     resultSize = size;
@@ -207,21 +192,17 @@ public class FlowLayout extends ViewGroup {
                 break;
 
             // Parent has imposed a maximum size on us
-            // 自己不确定大小  但是父view给了一个最大值 （自己为WRAP_CONTENT）
             case MeasureSpec.AT_MOST:
                 if (childDimension >= 0) {
-                    // 孩子确定自己为50dp 则孩子为确定大小 result为50dp
                     // Child wants a specific size... so be it
                     resultSize = childDimension;
                     resultMode = MeasureSpec.EXACTLY;
-                } else if (childDimension == LayoutParams.MATCH_PARENT) {
-                    //孩子确定为填满 但是自身为最大值待确认  则让孩子跟自己一样  为最大值待确认 result为100dp
+                } else if (childDimension == ViewGroup.LayoutParams.MATCH_PARENT) {
                     // Child wants to be our size, but our size is not fixed.
                     // Constrain child to not be bigger than us.
                     resultSize = size;
                     resultMode = MeasureSpec.AT_MOST;
-                } else if (childDimension == LayoutParams.WRAP_CONTENT) {
-                    //孩子需要根据自己的孩子确定大小 则孩子为有最大值待确认 则暂时给他一个最大值100dp 等他确定自己的值
+                } else if (childDimension == ViewGroup.LayoutParams.WRAP_CONTENT) {
                     // Child wants to determine its own size. It can't be
                     // bigger than us.
                     resultSize = size;
@@ -230,24 +211,20 @@ public class FlowLayout extends ViewGroup {
                 break;
 
             // Parent asked to see how big we want to be
-            // 自己无确认数值，父view也未给加限制（父和自己都是WRAP_CONTENT）
             case MeasureSpec.UNSPECIFIED:
                 if (childDimension >= 0) {
                     // Child wants a specific size... let them have it
-                    // 孩子有自己确认50dp 则孩子为确定大小 result为50dp
                     resultSize = childDimension;
                     resultMode = MeasureSpec.EXACTLY;
-                } else if (childDimension == LayoutParams.MATCH_PARENT) {
+                } else if (childDimension == ViewGroup.LayoutParams.MATCH_PARENT) {
                     // Child wants to be our size... find out how big it should
                     // be
-                    // 孩子确定为填满 自己暂未确定 则孩子与自己一样
-//                    resultSize = View.sUseZeroUnspecifiedMeasureSpec ? 0 : size;
+                    resultSize = 0;
                     resultMode = MeasureSpec.UNSPECIFIED;
-                } else if (childDimension == LayoutParams.WRAP_CONTENT) {
+                } else if (childDimension == ViewGroup.LayoutParams.WRAP_CONTENT) {
                     // Child wants to determine its own size.... find out how
                     // big it should be
-                    // 孩子需要根据子view来判断 则孩子跟自己一样
-//                    resultSize = View.sUseZeroUnspecifiedMeasureSpec ? 0 : size;
+                    resultSize = 0;
                     resultMode = MeasureSpec.UNSPECIFIED;
                 }
                 break;
@@ -255,4 +232,8 @@ public class FlowLayout extends ViewGroup {
         //noinspection ResourceType
         return MeasureSpec.makeMeasureSpec(resultSize, resultMode);
     }
+
+
+
+
 }
