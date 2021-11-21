@@ -1,9 +1,12 @@
 package com.example.myhandler
 
+import android.media.Image
 import android.os.*
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
+import android.widget.ImageView
 import androidx.fragment.app.FragmentTransaction
+import com.example.mydrawable.MyDrawable
 import com.example.myhandler.fragment.BlankFragment
 import com.example.myhandler.model.MyLooper
 import kotlin.concurrent.thread
@@ -37,6 +40,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val fishView = findViewById<ImageView>(R.id.iv_fish)
+        fishView.setImageDrawable(MyDrawable())
 //        Thread(TextMyHandler).start()
 //        TextMyHandler.run()
 

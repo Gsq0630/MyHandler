@@ -4,18 +4,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#8E2727"
     tools:context=".MainActivity">
 
-    <com.example.myview.MyFrameLayout
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:background="@color/black"
+    <ImageView
+        android:id="@+id/iv_fish"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="MissingConstraints" >
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
 
-    </com.example.myview.MyFrameLayout>
+<!--    <com.example.myview.MyFrameLayout-->
+<!--        android:layout_width="200dp"-->
+<!--        android:layout_height="200dp"-->
+<!--        android:background="@color/black"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        tools:ignore="MissingConstraints" >-->
+
+<!--    </com.example.myview.MyFrameLayout>-->
 
 <!--    <TextView-->
 <!--        android:layout_width="wrap_content"-->

@@ -9,3 +9,4 @@ dependencyResolutionManagement {
 rootProject.name = "MyHandler"
 include ':app'
 include ':MyView'
+include ':MyDrawable'
