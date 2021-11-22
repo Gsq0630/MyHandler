@@ -40,8 +40,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val fishView = findViewById<ImageView>(R.id.iv_fish)
-        fishView.setImageDrawable(MyDrawable())
+//        val fishView = findViewById<ImageView>(R.id.iv_fish)
+//        fishView.setImageDrawable(MyDrawable())
 //        Thread(TextMyHandler).start()
 //        TextMyHandler.run()
 
